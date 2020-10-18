@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  ocr:
+    container_name: ocr_identifier
+    restart: unless-stopped
+    build:
+      context: ./ocr_identifier
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - $PWD/ocr_identifier:/ocr_identifier
+      - $PWD/pictures:/ocr_identifier/pictures
+      - $PWD/models:/ocr_identifier/models
+    command: python3 ocr_identifier.py

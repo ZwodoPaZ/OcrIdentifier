@@ -1,0 +1,21 @@
+config:
+    training_data_file: training_data.csv
+    # Name of the training data file.
+
+    epochs: 10
+    # Number of times the spaCy model should go through the training data.
+
+    labels:
+    # Labels to be used when identifying text.
+    # Should match labels present in the training data.
+        label1: label1
+        label2: label2
+        label3: label3
+        label4: label4
+        label5: label5
+        label6: label6
+
+    # port: 8000 exampel
+    # The port the identifer listens to can be changed in docker-compose.yml
+    # If you do not intend to use docker-compose.
+    # Set the port above by uncommenting the line.

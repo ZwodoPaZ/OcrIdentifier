@@ -1,6 +1,7 @@
 import spacy
 import json
 import yaml
+import json
 import random
 import os
 import glob
@@ -95,11 +96,19 @@ class Identifier:
                 texts, labels = zip(*batch)
                 nlp.update(texts, labels, drop=drop, sgd=optimizer, losses=losses)
 
+        if not os.path.isdir('models'):
+            print('Models directory does not exist, creating folder')
+            try:
+                os.mkdir('models')
+            except:
+                print('Failed to create models directory')
+                raise SystemExit(4)
+        print('Saving model')
         nlp.to_disk(os.path.dirname(os.path.realpath(__file__)) + "/models/" + str(datetime.datetime.now()).split('.')[0])
         raise SystemExit
 
     def find_newest_model(self):
-        if not os.path.isdir('/models'):
+        if not os.path.isdir('models'):
             print('Models directory does not exist, creating folder')
             try:
                 os.mkdir('models')
@@ -142,49 +151,18 @@ class Identifier:
         input = new_text.split('\n')
         return input
 
-    def json_conversion(self, label1, label2, label3, label4, label5, label6):
-        label1_json= ""
-        for x in range(len(label1)):
-            label1_json= label1_json + ' ' + '"' + self.label1 + str(x+1) + '":"' + str(label1[x]) + '",'
-        label1_json= label1_json[1:-1]
-        label1_json= str(label1_json)
-        label2_json= ""
-        for x in range(len(label2)):
-            label2_json= label2_json + ' ' + '"' + self.label2 + str(x+1) + '":"' + str(label2[x]) + '",'
-        label2_json= label2_json[1:-1]
-        label2_json= str(label2_json)
-        label3_json= ""
-        for x in range(len(label3)):
-            label3_json= label3_json + ' ' + '"' + self.label3 + str(x+1) + '":"' + str(label3[x]) + '",'
-        label3_json= label3_json[1:-1]
-        label3_json= str(label3_json)
-        label4_json= ""
-        for x in range(len(label4)):
-            label4_json= label4_json + ' ' + '"' + self.label4 + str(x+1) + '":"' + str(label4[x]) + '",'
-        label4_json= label4_json[1:-1]
-        label4_json= str(label4_json)
-        label5_json= ""
-        for x in range(len(label5)):
-            label5_json= label5_json + ' ' + '"' + self.label5 + str(x+1) + '":"' + str(label5[x]) + '",'
-        label5_json= label5_json[1:-1]
-        label5_json= str(label5_json)
-        label6_json= ""
-        for x in range(len(label6)):
-            label6_json= label6_json + ' ' + '"' + self.label6 + str(x+1) + '":"' + str(label6[x]) + '",'
-        label6_json= label6_json[1:-1]
-        label6_json= str(label6_json)
-        json = '{"labels":{' + label1_json + ', ' + label2_json + ', ' + label3_json + ', ' + label4_json + ', ' + label5_json + ', ' + label6_json + '}}'
-        return json
-
+    def json_conversion(self, labels):
+        return json.dumps(labels, ensure_ascii=False)
+        
     def identify(self, input):
         nlp = spacy.load(identifier.find_newest_model())
 
-        label1 = []
-        label2 = []
-        label3 = []
-        label4 = []
-        label5 = []
-        label6 = []
+        label1 = {}
+        label2 = {}
+        label3 = {}
+        label4 = {}
+        label5 = {}
+        label6 = {}
 
         for y in range(len(input)):
             docs = [nlp.tokenizer(input[y])]
@@ -198,23 +176,29 @@ class Identifier:
             for label in predicted_labels:
                 if self.label1 in textcat.labels[label]:
                     input[y] = input[y].replace('"', '')
-                    label1.append(input[y])
+                    label1[str(self.label1) + str(y)] = input[y]
                 elif self.label2 in textcat.labels[label]:
                     input[y] = input[y].replace('"', '')
-                    label2.append(input[y])
+                    label2[str(self.label2) + str(y)] = input[y]
                 elif self.label3 in textcat.labels[label]:
                     input[y] = input[y].replace('"', '')
-                    label3.append(input[y])
+                    label3[str(self.label3) + str(y)] = input[y]
                 elif self.label4 in textcat.labels[label]:
                     input[y] = input[y].replace('"', '')
-                    label4.append(input[y])
+                    label4[str(self.label4) + str(y)] = input[y]
                 elif self.label5 in textcat.labels[label]:
                     input[y] = input[y].replace('"', '')
-                    label5.append(input[y])
+                    label5[str(self.label5) + str(y)] = input[y]
                 elif self.label6 in textcat.labels[label]:
                     input[y] = input[y].replace('"', '')
-                    label6.append(input[y])
-        return identifier.json_conversion(label1, label2, label3, label4, label5, label6)
+                    label6[str(self.label6) + str(y)] = input[y]
+                labels = label1.copy()
+                labels.update(label2)
+                labels.update(label3)
+                labels.update(label4)
+                labels.update(label5)
+                labels.update(label6)
+        return identifier.json_conversion(labels)
 
 def number_of_workers():
     return (multiprocessing.cpu_count() * 2) + 1
